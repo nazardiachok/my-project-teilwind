@@ -2,11 +2,16 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { nanoid } from "@reduxjs/toolkit";
 import { postAdded } from "./postSlice";
+import { useSelector } from "react-redux";
 
 function AddPostForm() {
     const[title,setTitle]=useState("");
     const[content,setContent]=useState("");
+    const[author,setAuthor]=useState("");
+
+
     const dispatch = useDispatch();
+    const users = useSelector(state=> state.users)
 
     function onTitleChanged(e){
         setTitle(e.target.value)
@@ -15,17 +20,27 @@ function AddPostForm() {
         setContent(e.target.value)
     }
 
+    function onAuthorChanged(e){
+        setAuthor(e.target.value);
+        console.log(e.target.value)
+    }
+
     function onSavePostClicked(){
         if(title && content){
             dispatch(postAdded({
                 id:nanoid(),
                 title,
-                content}))
+                content,
+                author
+            }))
 
-            setTitle("");
-            setContent("")
+            setTitle(""); /* dafür muss in input value={title} stehen */
+            setContent("");
+            
         }
     }
+
+    const canSave = Boolean(title) && Boolean(content);
 
     return ( 
         <div className="">
@@ -34,10 +49,21 @@ function AddPostForm() {
                 <label htmlFor="postTitle">Post Title: </label>
                 <input className="border" type="text" id="postTitle" name="postTitle" value={title} onChange={onTitleChanged} />
 
-                <label htmlFor="postTitle">Post Title: </label>
+                <label htmlFor="postTitle">Content: </label>
                 <textarea className="border" id="postContent" name="postContent" value={content} onChange={onContentChanged} />
 
-                <button className=" flex border bg-cyan-800 w-20 mx-auto mt-2" type="button" onClick={()=>onSavePostClicked()}>Save Post</button>
+                <label htmlFor="Author">Author: </label>
+                <select className="border mt-1" id="Author" value={author} onChange={onAuthorChanged}>
+                    <option value=""></option>
+                    {users.map(user => 
+                        <option key={user.id} value={user.name}>{user.name}</option>)}
+                </select>
+                
+                <button className="flex border bg-cyan-800  w-20 mx-auto mt-2 text-white"
+                type="button" 
+                onClick={()=>onSavePostClicked()}
+                disabled ={!canSave}
+                >{canSave ? "Save" : "Disabled"}</button>
             </form>
         </div>
      );
